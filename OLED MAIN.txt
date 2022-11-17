@@ -1,0 +1,103 @@
+#include <Wire.h>
+#include "SSD1306.h"
+#include "OLEDDisplayUi.h"
+#include "Images.h"
+SSD1306Wire  display(0x3c, D2, D1); //setup OLED  SDA  SCL
+
+
+OLEDDisplayUi ui ( &display );  //User Interface Defenition
+
+//prototype
+void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state,int16_t x, int16_t y);
+void drawFrame2(OLEDDisplay *display, OLEDDisplayUiState* state,int16_t x, int16_t y);
+void drawFrame3(OLEDDisplay *display, OLEDDisplayUiState* state,int16_t x, int16_t y);
+
+void drawOverlay(OLEDDisplay *display, OLEDDisplayUiState* state);
+void drawOverlay2(OLEDDisplay *display, OLEDDisplayUiState* state);
+
+FrameCallback frames[] = {drawFrame1, drawFrame2, drawFrame3};  //Frames Calling
+int numberOfFrames = 3;
+
+
+OverlayCallback overlays[] = { drawOverlay,drawOverlay2 };  // Overlays Calling
+int numberOfOverlays = 2;
+
+
+void setup (){
+pinMode(16,INPUT_PULLUP);
+pinMode(2,INPUT_PULLUP);
+     
+  
+  
+   ui.init(); //Initialize the User Interface
+ display.clear();
+ui.setTargetFPS(60);   //Setup UI Frames
+
+ui.disableAllIndicators(); //Make indicators Off
+//ui.disableAutoTransition(); //Disable auto Transition
+
+ ui.setFrames(frames, numberOfFrames);  // SetFrames to show
+  ui.setOverlays(overlays, numberOfOverlays);  // SetOverlays to show
+   ui.setTimePerTransition(500);
+
+ display.flipScreenVertically();
+
+}
+void loop () {
+   if(digitalRead(16)== LOW ){
+  ui.previousFrame();
+ 
+  
+ }
+ if(digitalRead(2)== LOW ){
+    ui.nextFrame();
+  
+  
+ } 
+   
+  display.flipScreenVertically();
+  ui.update();
+  
+}
+
+
+
+void drawFrame2(OLEDDisplay *display, OLEDDisplayUiState* state,int16_t x, int16_t y) {
+
+  display->drawXbm(x + 34, y + 2, mylogo_width,mylogo_height, mylogo);
+ }
+ void drawFrame3(OLEDDisplay *display, OLEDDisplayUiState* state,int16_t x, int16_t y) {
+
+  display->drawXbm(x + 34, y + 2,WiFi_Logo_width,WiFi_Logo_height, WiFi_Logo);
+ }
+ 
+
+void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state,int16_t x, int16_t y) {
+
+  display->setTextAlignment(TEXT_ALIGN_LEFT);
+  display->setFont(ArialMT_Plain_16);
+  display->drawString(0 +x, 10+y , "Babak Stars");
+
+  display->setFont(ArialMT_Plain_10);
+  display->drawString(0+x , 27+y , "@babakstars");
+
+  display->setFont(ArialMT_Plain_10);
+  display->drawString(0+x, 38+y , "subscribe to my channel");
+
+}
+void drawOverlay(OLEDDisplay *display, OLEDDisplayUiState* state) 
+{
+
+  display->setFont(ArialMT_Plain_10);
+  display->setTextAlignment(TEXT_ALIGN_LEFT);
+  display->drawString(60, 54, "@babakstars");
+  
+}
+void drawOverlay2(OLEDDisplay *display, OLEDDisplayUiState* state) 
+{
+
+  display->setFont(ArialMT_Plain_10);
+  display->setTextAlignment(TEXT_ALIGN_LEFT);
+  display->drawString(1, 54, String(state->currentFrame + 1) + "/" + String(numberOfFrames));
+  
+}
